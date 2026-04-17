@@ -108,6 +108,12 @@ class FakeTcpInjector(TcpInjector):
 
     def on_outbound_packet(self, packet: Packet, connection: FakeInjectiveConnection):
         if connection.sch_fake_sent:
+            # Allow pure ACK packets through (e.g. retransmissions of the handshake ACK
+            # or ACKs for server data that arrive before fake injection completes)
+            if packet.tcp.ack and (not packet.tcp.syn) and (not packet.tcp.rst) and (not packet.tcp.fin) and (
+                    len(packet.tcp.payload) == 0):
+                self.w.send(packet, False)
+                return
             self.on_unexpected_packet(packet, connection, "unexpected outbound packet, recv packet after fake sent!")
             return
         if packet.tcp.syn and (not packet.tcp.ack) and (not packet.tcp.rst) and (not packet.tcp.fin) and (
