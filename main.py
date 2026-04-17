@@ -55,9 +55,7 @@ async def relay_main_loop(sock_1: socket.socket, sock_2: socket.socket, peer_tas
                 if first_prefix_data:
                     data = first_prefix_data + data
                     first_prefix_data = b""
-                sent_len = await loop.sock_sendall(sock_2, data)
-                if sent_len != len(data):
-                    raise ValueError("incomplete send")
+                await loop.sock_sendall(sock_2, data)
             except Exception:
                 sock_1.close()
                 sock_2.close()
